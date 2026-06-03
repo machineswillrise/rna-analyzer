@@ -2,7 +2,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
+
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 enum Codon {
 	PHENYALANINE("Phenylanine"),
@@ -42,6 +50,9 @@ class RNAAnalyzer {
 		put('G', 'C');
 	}};
 
+	private static final JFrame frame = new JFrame();
+	private static final JPanel panel = new JPanel();
+
 	private static String getCodon(String rnaSegment) {
 		return switch (rnaSegment) {
 			case "UUU", "UUC"               -> Codon.PHENYALANINE.getName();
@@ -65,67 +76,90 @@ class RNAAnalyzer {
 		};
 	}
 
-	private static boolean isLast(List<String> strings, String someString) {
-		return someString.equals(strings.get(strings.size() - 1));
-	}
-
-	private static void printOutput(List<String> segments) {
-		for (String segment : segments) {
+	private static String formatCodons(List<String> segments) {
+		StringBuilder result = new StringBuilder();
+		for (int i = 0; i < segments.size(); i++) {
+			String segment = segments.get(i);
 			String codon = getCodon(segment);
-			System.out.print(codon);
+			result.append(codon);
 
 			if (codon.equals(Codon.STOP.getName())) {
-				if (isLast(segments, segment)) {
-					System.out.println();
-				} else {
-					System.out.println("Stop");
-				}
+				result.append("\n");
 				break;
 			}
 
-			if (isLast(segments, segment)) {
-				System.out.println();
+			if (i < segments.size() - 1) {
+				result.append(" - ");
 			} else {
-				System.out.print(" - ");
+				result.append("\n");
 			}
+		}
+
+		return result.toString();
+	}
+
+	private static void add(Box box, JComponent... components) {
+		for (JComponent component : components) {
+			box.add(component);
 		}
 	}
-	
-	public static void main(String[] args) {
-		try (Scanner scanner = new Scanner(System.in)) {
-			while (true) {
-				System.out.print("Please enter an RNA sequence: ");
-				String rna = scanner.nextLine();
 
-				char[] sequence = rna.toCharArray();
-				char[] dna = new char[sequence.length];
+	private static void setUpPanel(JPanel panel) {
+		Box box = Box.createVerticalBox();
+		JTextField rna = new JTextField(20);
+		JButton ok = new JButton("OK");
+		JLabel dna = new JLabel("DNA sequence: ");
+		JLabel segments = new JLabel("Segments: ");
 
-				boolean valid = true;
-				for (int i = 0; i < sequence.length; i++) {
-					char current = sequence[i];
-					if (!CONVERSIONS.containsKey(current)) {	
-						System.out.println("Invalid RNA sequence.");
-						valid = false;
-						break;
-					}
+		add(box, rna, ok, dna, segments);
+		panel.add(box);
 
-					dna[i] = CONVERSIONS.get(current);
+		ok.addActionListener(e -> {
+			String rnaText = rna.getText();
+			char[] sequence = rnaText.toCharArray();
+			char[] result = new char[sequence.length];
+
+			boolean valid = true;
+			for (int i = 0; i < sequence.length; i++) {
+				char current = sequence[i];
+				if (!CONVERSIONS.containsKey(current)) {	
+					dna.setText("Invalid DNA sequence");
+					valid = false;
+					break;
 				}
 
-				if (valid) {
-					String fullDna = new String(dna);
-					System.out.println("DNA sequence: " + fullDna);
-
-					List<String> segments = new ArrayList<>();
-					int length = fullDna.length();
-
-					for (int i = 0; i < length; i += 3) {
-						segments.add(fullDna.substring(i, Math.min(length, i + 3)));
-					}
-
-					printOutput(segments);
-				}
+				result[i] = CONVERSIONS.get(current);
 			}
-		}
+
+			String fullResult = new String(result);
+			if (valid) {
+				dna.setText(fullResult);
+			}
+
+			List<String> segmentsList = new ArrayList<>();
+			int length = fullResult.length();
+
+			for (int i = 0; i < length; i += 3) {
+				segmentsList.add(fullResult.substring(i, Math.min(length, i + 3)));
+			}
+
+			segments.setText("Segments: " + formatCodons(segmentsList));
+		});
+	}
+
+	public RNAAnalyzer() {
+		frame.setSize(384, 128);
+		frame.setTitle("RNA Analyzer");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		setUpPanel(panel);
+		frame.add(panel);
+		frame.setVisible(true);
+	}
+
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(() -> {
+			new RNAAnalyzer();
+		});
 	}
 }
