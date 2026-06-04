@@ -53,8 +53,8 @@ class RNAAnalyzer {
 	private static final JFrame frame = new JFrame();
 	private static final JPanel panel = new JPanel();
 
-	private static String getCodon(String rnaSegment) {
-		return switch (rnaSegment) {
+	private static String getCodon(String dnaSegment) {
+		return switch (dnaSegment) {
 			case "UUU", "UUC"               -> Codon.PHENYALANINE.getName();
 			case "UUA", "UUG"               -> Codon.LEUCINE.getName();
 			case "CUU", "CUC", "CUA", "CUG" -> Codon.LEUCINE.getName();
