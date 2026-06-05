@@ -31,6 +31,29 @@ enum Codon {
 	GLYCINE("Glycine"),
 	UNKNOWN("Unknown");
 
+	public static Codon fromDnaSegment(String dnaSegment) {
+		return switch (dnaSegment) {
+			case "UUU", "UUC"               -> PHENYALANINE;
+			case "UUA", "UUG"               -> LEUCINE;
+			case "CUU", "CUC", "CUA", "CUG" -> LEUCINE;
+			case "AUU", "AUC", "AUA"        -> ISOLEUCINE;
+			case "AUG"                      -> METHIONINE;
+			case "GUU"                      -> VALINE;
+			case "UAU", "UAC"               -> TYROSINE;
+			case "UAA", "UAG", "UGA"        -> STOP;
+			case "CAU", "CAC"               -> HISTIDINE;
+			case "CAA", "CAG"               -> GLUTAMINE;
+			case "AAU", "AAC"               -> ASPARAGINE;
+			case "AAA", "AAG"               -> LYSINE;
+			case "GAU", "GAC"               -> ASPARTIC_ACID;
+			case "GAA", "GAG"               -> GLUTAMIC_ACID;
+			case "UGU", "UGC"               -> CYSTEINE;
+			case "CGU", "CGC", "CGA", "CGG" -> ARGININE;
+			case "GGU", "GGC", "GGA", "GGG" -> GLYCINE;	
+			default                         -> UNKNOWN;
+		};
+	}
+
 	private final String name;
 
 	private Codon(String name) {
@@ -53,34 +76,11 @@ class RNAAnalyzer {
 	private static final JFrame frame = new JFrame();
 	private static final JPanel panel = new JPanel();
 
-	private static String getCodon(String dnaSegment) {
-		return switch (dnaSegment) {
-			case "UUU", "UUC"               -> Codon.PHENYALANINE.getName();
-			case "UUA", "UUG"               -> Codon.LEUCINE.getName();
-			case "CUU", "CUC", "CUA", "CUG" -> Codon.LEUCINE.getName();
-			case "AUU", "AUC", "AUA"        -> Codon.ISOLEUCINE.getName();
-			case "AUG"                      -> Codon.METHIONINE.getName();
-			case "GUU"                      -> Codon.VALINE.getName();
-			case "UAU", "UAC"               -> Codon.TYROSINE.getName();
-			case "UAA", "UAG", "UGA"        -> Codon.STOP.getName();
-			case "CAU", "CAC"               -> Codon.HISTIDINE.getName();
-			case "CAA", "CAG"               -> Codon.GLUTAMINE.getName();
-			case "AAU", "AAC"               -> Codon.ASPARAGINE.getName();
-			case "AAA", "AAG"               -> Codon.LYSINE.getName();
-			case "GAU", "GAC"               -> Codon.ASPARTIC_ACID.getName();
-			case "GAA", "GAG"               -> Codon.GLUTAMIC_ACID.getName();
-			case "UGU", "UGC"               -> Codon.CYSTEINE.getName();
-			case "CGU", "CGC", "CGA", "CGG" -> Codon.ARGININE.getName();
-			case "GGU", "GGC", "GGA", "GGG" -> Codon.GLYCINE.getName();
-			default                         -> Codon.UNKNOWN.getName();
-		};
-	}
-
 	private static String formatCodons(List<String> segments) {
 		StringBuilder result = new StringBuilder();
 		for (int i = 0; i < segments.size(); i++) {
 			String segment = segments.get(i);
-			String codon = getCodon(segment);
+			String codon = Codon.fromDnaSegment(segment).getName();
 			result.append(codon);
 
 			if (codon.equals(Codon.STOP.getName())) {
