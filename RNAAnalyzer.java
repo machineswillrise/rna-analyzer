@@ -12,6 +12,29 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+class RNA {
+	private final String sequence;
+
+	public RNA(String sequence) {
+		this.sequence = sequence;
+	}
+
+	public String getSequence() {
+		return sequence;
+	}
+
+	public List<String> toDnaSegments() {
+		List<String> result = new ArrayList<>();
+		int length = sequence.length();
+
+		for (int i = 0; i < length; i += 3) {
+			result.add(sequence.substring(i, Math.min(length, i + 3)));
+		}
+
+		return result;
+	}
+}
+
 enum Codon {
 	PHENYALANINE("Phenylanine"),
 	LEUCINE("Leucine"),
@@ -115,8 +138,8 @@ class RNAAnalyzer {
 		panel.add(box);
 
 		ok.addActionListener(e -> {
-			String rnaText = rna.getText();
-			char[] sequence = rnaText.toCharArray();
+			RNA rnaObject = new RNA(rna.getText());
+			char[] sequence = rnaObject.getSequence().toCharArray();
 			char[] result = new char[sequence.length];
 
 			boolean valid = true;
@@ -136,13 +159,7 @@ class RNAAnalyzer {
 				dna.setText(fullResult);
 			}
 
-			List<String> segmentsList = new ArrayList<>();
-			int length = fullResult.length();
-
-			for (int i = 0; i < length; i += 3) {
-				segmentsList.add(fullResult.substring(i, Math.min(length, i + 3)));
-			}
-
+			List<String> segmentsList = rnaObject.toDnaSegments();
 			segments.setText("Segments: " + formatCodons(segmentsList));
 		});
 	}
